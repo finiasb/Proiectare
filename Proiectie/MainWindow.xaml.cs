@@ -64,7 +64,13 @@ namespace Proiectie
             if (lstCantari.SelectedItem is Cantare selectata)
             {
                 lblSelectedTitle.Text = selectata.Titlu;
-                var strofe = Regex.Split(selectata.Versuri, @"(?=\d+\.)|(?:\r?\n){2,}").Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+
+                var strofe = Regex.Split(selectata.Versuri, @"(?=\d+\.)|(?:\r?\n){2,}")
+                                  .Select(s => s.Trim())
+                                  .Where(s => !string.IsNullOrWhiteSpace(s))
+                                  .Where(s => !s.StartsWith("I:"))
+                                  .ToList();
+
                 itemsStrofe.ItemsSource = strofe;
             }
         }
