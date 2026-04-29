@@ -18,7 +18,7 @@ namespace Proiectie
     public partial class MainWindow : Window
     {
         private ProjectionWindow _projectionWindow;
-        private string _connectionString = $"Data Source={System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Cantari.db")}";
+        private string _connectionString = $"Data Source={System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Cantece.db")}";
         public MainWindow()
         {
             InitializeComponent();
@@ -28,55 +28,27 @@ namespace Proiectie
 
         private void IncarcaCantari(string filtru = "")
         {
-            string dbPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Cantari.db");
-
             using (var connection = new SqliteConnection(_connectionString))
             {
                 connection.Open();
 
-                string numeTabelReal = "";
-                var cmdGetTable = connection.CreateCommand();
-                cmdGetTable.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';";
-
-                using (var reader = cmdGetTable.ExecuteReader())
-                {
-                    if (reader.Read())
-                    {
-                        numeTabelReal = reader.GetString(0);
-                    }
-                    else
-                    {
-                        System.Windows.Forms.MessageBox.Show("Baza de date pare să fie goală (nu are niciun tabel)!");
-                        return;
-                    }
-                }
-
                 List<Cantare> lista = new List<Cantare>();
-                var command = connection.CreateCommand();
-
-                command.CommandText = $"SELECT id, titlu, versuri FROM {numeTabelReal} WHERE titlu LIKE @filtru LIMIT 100";
+                SqliteCommand command = new SqliteCommand("SELECT id, titlu, versuri FROM Cantece WHERE titlu LIKE @filtru LIMIT 100", connection);
                 command.Parameters.AddWithValue("@filtru", $"%{filtru}%");
-
-                try
+                using (var reader = command.ExecuteReader())
                 {
-                    using (var reader = command.ExecuteReader())
+                    while (reader.Read())
                     {
-                        while (reader.Read())
-                        {
-                            lista.Add(new Cantare
-                            {
-                                Id = reader.GetInt32(0),
-                                Titlu = reader.GetString(1),
-                                Versuri = reader.GetString(2)
-                            });
-                        }
+                        if(reader.GetString(1) != "Titlu necunoscut")
+                                lista.Add(new Cantare
+                                {
+                                    Id = reader.GetInt32(0),
+                                    Titlu = reader.GetString(1),
+                                    Versuri = reader.GetString(2)
+                                });
                     }
-                    lstCantari.ItemsSource = lista;
                 }
-                catch (Exception ex)
-                {
-                    System.Windows.Forms.MessageBox.Show("Eroare la citire: " + ex.Message);
-                }
+                lstCantari.ItemsSource = lista;
             }
         }
 
@@ -90,11 +62,7 @@ namespace Proiectie
             if (lstCantari.SelectedItem is Cantare selectata)
             {
                 lblSelectedTitle.Text = selectata.Titlu;
-                var strofe = Regex.Split(selectata.Versuri, @"(?=\d+\.)|(?:\r?\n){2,}")
-                                  .Select(s => s.Trim())
-                                  .Where(s => !string.IsNullOrWhiteSpace(s))
-                                  .ToList();
-
+                var strofe = Regex.Split(selectata.Versuri, @"(?=\d+\.)|(?:\r?\n){2,}").Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
                 itemsStrofe.ItemsSource = strofe;
             }
         }
@@ -103,18 +71,14 @@ namespace Proiectie
         {
             var button = sender as System.Windows.Controls.Button;
 
-            if (button?.DataContext != null)
+            if (button != null)
             {
                 string textStrofa = button.DataContext.ToString();
-
-                string textCurat = Regex.Replace(textStrofa, @"^\d+\.\s*", "");
-                textCurat = textCurat.Replace("/:", "").Replace(":/", "").Trim();
-
-                txtLivePreview.Text = textCurat;
+                txtLivePreview.Text = textStrofa;
 
                 if (_projectionWindow != null && _projectionWindow.IsLoaded)
                 {
-                    _projectionWindow.SetText(textCurat);
+                    _projectionWindow.SetText(textStrofa);
                 }
             }
         }

@@ -67,7 +67,7 @@
                 </Border>
 
                 <Button Content="DESCHIDE PROIECȚIA" Margin="0,20,0,5" Height="40" Background="#007ACC" Foreground="White" Click="OpenProjection_Click"/>
-                <Button Content="OPREȘTE PROIECȚIA"  Click="BtnCloseProjection_Click" Background="#C0392B" Foreground="White" Height="40" Margin="5"/>
+                <Button Content="OPREȘTE PROIECȚIA"  Click="BtnCloseProjection_Click" Background="#C0392B" Foreground="White" Height="40" Margin="0, 0, 0 5" Width="290"/>
                 <Button Content="ASCUNDE TEXTUL (F5)" Height="40" Background="#C0392B" Foreground="White" Click="Blackout_Click"/>
             </StackPanel>
         </Border>
