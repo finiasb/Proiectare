@@ -32,9 +32,11 @@ namespace Proiectie
             {
                 connection.Open();
 
+                string filtruCurat = NormalizeazaText(filtru);
+                string filtruSql = "%" + filtruCurat.Replace(" ", "%") + "%";
                 List<Cantare> lista = new List<Cantare>();
-                SqliteCommand command = new SqliteCommand("SELECT id, titlu, versuri FROM Cantece WHERE titlu LIKE @filtru LIMIT 100", connection);
-                command.Parameters.AddWithValue("@filtru", $"%{filtru}%");
+                SqliteCommand command = new SqliteCommand("SELECT id, titlu, versuri FROM Cantece WHERE REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(LOWER(titlu), '-', ' '), ',', ' '), 'ă', 'a'), 'ţ', 't'), 'ş', 's'), 'â', 'a'), 'î', 'i'), 'ș', 's'), 'ț', 't') LIKE @filtru LIMIT 100", connection);
+                command.Parameters.AddWithValue("@filtru", filtruSql);
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -116,6 +118,21 @@ namespace Proiectie
                 _projectionWindow = null;
                 txtLivePreview.Text = "PROIECȚIE OPRITĂ";
             }
+        }
+
+        public static string NormalizeazaText(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return "";
+            text = text.ToLower();
+
+            text = text.Replace("ă", "a").Replace("â", "a").Replace("î", "i");
+            text = text.Replace("ș", "s").Replace("ş", "s"); 
+            text = text.Replace("ț", "t").Replace("ţ", "t"); 
+
+            text = text.Replace("-", " ");
+            text = Regex.Replace(text, @"[^a-z0-9]", " ");
+            text = Regex.Replace(text, @"\s+", " ");
+            return text.Trim();
         }
     }
 }
