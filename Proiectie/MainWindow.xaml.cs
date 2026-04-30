@@ -25,6 +25,8 @@ namespace Proiectie
             InitializeComponent();
             IncarcaCantari();
             txtSearch.TextChanged += TxtSearch_TextChanged;
+
+            txtSearch.KeyDown += TxtSearch_KeyDown;
         }
 
         private void IncarcaCantari(string filtru = "")
@@ -218,7 +220,25 @@ namespace Proiectie
             text = Regex.Replace(text, @"\s+", " ");
             return text.Trim();
         }
+        private void TxtSearch_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                if (lstCantari.Items.Count > 0)
+                {
+                    lstCantari.Focus();
 
-        
+                    lstCantari.SelectedIndex = 0;
+
+                    if (lstCantari.SelectedItem is Cantare selectata)
+                    {
+                        IncarcaDetaliiCantare(selectata);
+                    }
+
+                    e.Handled = true;
+                }
+            }
+        }
+
     }
 }
