@@ -69,13 +69,10 @@ namespace Proiectie
         }
         private void btnToggleProjection_Click(object sender, RoutedEventArgs e)
         {
-            // Dacă proiecția NU este deschisă sau a fost închisă manual
             if (_projectionWindow == null || !_projectionWindow.IsLoaded)
             {
-                // 1. Deschidem fereastra
                 _projectionWindow = new ProjectionWindow();
 
-                // 2. Detectăm ecranele
                 var screens = System.Windows.Forms.Screen.AllScreens;
                 var secondary = screens.FirstOrDefault(s => !s.Primary) ?? screens[0];
 
@@ -87,18 +84,15 @@ namespace Proiectie
                 _projectionWindow.Show();
                 _projectionWindow.WindowState = WindowState.Maximized;
 
-                // 3. Modificăm aspectul butonului
                 btnToggleProjection.Content = "OPREȘTE PROIECȚIA";
                 btnToggleProjection.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#C0392B"));
                 txtLivePreview.Text = "PROIECȚIE ACTIVĂ";
             }
             else
             {
-                // 1. Închidem fereastra
                 _projectionWindow.Close();
                 _projectionWindow = null;
 
-                // 2. Resetăm aspectul butonului
                 btnToggleProjection.Content = "DESCHIDE PROIECȚIA";
                 btnToggleProjection.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#28A745"));
                 txtLivePreview.Text = "PROIECȚIE OPRITĂ";
@@ -123,8 +117,6 @@ namespace Proiectie
             if (lstCantari.SelectedItem is Cantare selectata)
                 IncarcaDetaliiCantare(selectata);
         }
-       
-        
 
         private void Strofa_Click(object sender, RoutedEventArgs e)
         {
@@ -194,6 +186,12 @@ namespace Proiectie
             {
                 IncarcaDetaliiCantare(selectata);
             }
+        }
+        private void OpenSettings_Click(object sender, RoutedEventArgs e)
+        {
+            SettingsWindow settings = new SettingsWindow();
+            settings.Owner = this; 
+            settings.ShowDialog(); 
         }
         private void IncarcaDetaliiCantare(Cantare selectata)
         {
