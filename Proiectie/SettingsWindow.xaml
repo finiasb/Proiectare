@@ -5,6 +5,17 @@
     <StackPanel Margin="20">
         <TextBlock Text="CONFIGURARE" Foreground="#007ACC" FontSize="20" Margin="0,0,0,20"/>
 
+        <ItemsControl x:Name="MonitorsList">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <CheckBox Content="{Binding DeviceName}" 
+                          IsChecked="{Binding IsSelected}" 
+                          Foreground="White"
+                          Margin="5" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
         <Label Content="Mărime Font Proiecție:" Foreground="White"/>
         <Slider Minimum="20" Maximum="120" Value="60" Margin="0,5,0,20"/>
 

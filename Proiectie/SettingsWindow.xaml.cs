@@ -1,28 +1,51 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+﻿using System.Windows;
 
 namespace Proiectie
 {
     public partial class SettingsWindow : Window
     {
+        public static List<string> SelectedMonitorIds = new List<string>();
+
         public SettingsWindow()
         {
             InitializeComponent();
+            LoadMonitors();
         }
+
+        private void LoadMonitors()
+        {
+            var screens = System.Windows.Forms.Screen.AllScreens;
+            var options = new List<MonitorOption>();
+
+            var savedIds = Properties.Settings.Default.SavedMonitors ?? new System.Collections.Specialized.StringCollection();
+            foreach (var s in screens)
+            {
+                options.Add(new MonitorOption
+                {
+                    DeviceName = $"Monitor {(s.Primary ? "(Principal) " : "")}- {s.Bounds.Width}x{s.Bounds.Height}",
+                    ScreenId = s.DeviceName,
+                    IsSelected = savedIds.Contains(s.DeviceName)
+                });
+            }
+
+            MonitorsList.ItemsSource = options;
+        }
+
         private void Save_Click(object sender, RoutedEventArgs e)
-        { 
-            this.Close(); 
+        {
+            var selected = (List<MonitorOption>)MonitorsList.ItemsSource;
+            var collection = new System.Collections.Specialized.StringCollection();
+
+            foreach (var item in selected.Where(x => x.IsSelected))
+            {
+                collection.Add(item.ScreenId);
+                SelectedMonitorIds.Add(item.ScreenId);
+            }
+
+            Properties.Settings.Default.SavedMonitors = collection;
+            Properties.Settings.Default.Save();
+
+            this.Close();
         }
     }
 }

@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Linq;
-using System.Text.RegularExpressions;
-using Microsoft.Data.Sqlite;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace Proiectie
 {
-    
-
     public partial class MainWindow : Window
     {
         private ProjectionWindow _projectionWindow;
@@ -20,9 +12,22 @@ namespace Proiectie
         public MainWindow()
         {
             InitializeComponent();
+
+            if (Properties.Settings.Default.SavedMonitors != null)
+            {
+                SettingsWindow.SelectedMonitorIds = Properties.Settings.Default.SavedMonitors.Cast<string>().ToList();
+            }
+
             Functions.IncarcaCantari(this);
             txtSearch.TextChanged += TxtSearch_TextChanged;
             txtSearch.KeyDown += TxtSearch_KeyDown;
+
+            this.Closing += (s, e) => {
+                foreach (var window in _projectionWindows)
+                {
+                    window.Close();
+                }
+            };
         }
 
         private void SearchType_Changed(object sender, RoutedEventArgs e)
@@ -36,22 +41,26 @@ namespace Proiectie
             {
                 var screens = System.Windows.Forms.Screen.AllScreens;
 
+                var targetIds = SettingsWindow.SelectedMonitorIds;
+
                 foreach (var screen in screens)
                 {
-                    if (screen.Primary)
-                        continue;
+                    bool shouldProject = targetIds.Count > 0
+                        ? targetIds.Contains(screen.DeviceName)
+                        : !screen.Primary; 
 
-                    ProjectionWindow window = new ProjectionWindow();
+                    if (shouldProject)
+                    {
+                        ProjectionWindow window = new ProjectionWindow();
+                        window.Left = screen.Bounds.Left;
+                        window.Top = screen.Bounds.Top;
+                        window.Width = screen.Bounds.Width;
+                        window.Height = screen.Bounds.Height;
 
-                    window.Left = screen.WorkingArea.Left;
-                    window.Top = screen.WorkingArea.Top;
-                    window.Width = screen.WorkingArea.Width;
-                    window.Height = screen.WorkingArea.Height;
-
-                    window.Show();
-                    window.WindowState = WindowState.Maximized;
-
-                    _projectionWindows.Add(window);
+                        window.Show();
+                        window.WindowState = WindowState.Maximized;
+                        _projectionWindows.Add(window);
+                    }
                 }
 
                 if (_projectionWindows.Count > 0)
@@ -63,8 +72,9 @@ namespace Proiectie
             }
             else
             {
-                _projectionWindow.Close();
-                _projectionWindow = null;
+                _projectionWindows.ForEach(w => w.Close());
+                _projectionWindows.Clear();
+
 
                 btnToggleProjection.Content = "DESCHIDE PROIECȚIA";
                 btnToggleProjection.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#28A745"));
