@@ -20,11 +20,10 @@ namespace Proiectie
         {
             InitializeComponent();
         }
-
-        public void SetText(string text)
+        public void SetText(string textCurent)
         {
             Dispatcher.Invoke(() => {
-                txtMain.Text = text;
+                txtMain.Text = textCurent;
             });
         }
     }

@@ -14,6 +14,7 @@ namespace Proiectie
     {
         private ProjectionWindow _projectionWindow;
         private List<Song> _listaFavorite = new List<Song>();
+        private List<ProjectionWindow> _projectionWindows = new List<ProjectionWindow>();
 
         public string _connectionString = $"Data Source={System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Cantece.db")}";
         public MainWindow()
@@ -24,7 +25,6 @@ namespace Proiectie
             txtSearch.KeyDown += TxtSearch_KeyDown;
         }
 
-        
         private void SearchType_Changed(object sender, RoutedEventArgs e)
         {
             if (txtSearch != null)
@@ -32,24 +32,34 @@ namespace Proiectie
         }
         private void btnToggleProjection_Click(object sender, RoutedEventArgs e)
         {
-            if (_projectionWindow == null || !_projectionWindow.IsLoaded)
+            if (_projectionWindows.Count == 0)
             {
-                _projectionWindow = new ProjectionWindow();
-
                 var screens = System.Windows.Forms.Screen.AllScreens;
-                var secondary = screens.FirstOrDefault(s => !s.Primary) ?? screens[0];
 
-                _projectionWindow.Left = secondary.Bounds.Left;
-                _projectionWindow.Top = secondary.Bounds.Top;
-                _projectionWindow.Width = secondary.Bounds.Width;
-                _projectionWindow.Height = secondary.Bounds.Height;
+                foreach (var screen in screens)
+                {
+                    if (screen.Primary)
+                        continue;
 
-                _projectionWindow.Show();
-                _projectionWindow.WindowState = WindowState.Maximized;
+                    ProjectionWindow window = new ProjectionWindow();
 
-                btnToggleProjection.Content = "OPREȘTE PROIECȚIA";
-                btnToggleProjection.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#C0392B"));
-                txtLivePreview.Text = "PROIECȚIE ACTIVĂ";
+                    window.Left = screen.WorkingArea.Left;
+                    window.Top = screen.WorkingArea.Top;
+                    window.Width = screen.WorkingArea.Width;
+                    window.Height = screen.WorkingArea.Height;
+
+                    window.Show();
+                    window.WindowState = WindowState.Maximized;
+
+                    _projectionWindows.Add(window);
+                }
+
+                if (_projectionWindows.Count > 0)
+                {
+                    btnToggleProjection.Content = "OPREȘTE PROIECȚIA";
+                    btnToggleProjection.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#C0392B"));
+                    txtLivePreview.Text = "PROIECȚIE ACTIVĂ";
+                }
             }
             else
             {
@@ -90,9 +100,12 @@ namespace Proiectie
                 string textStrofa = button.DataContext.ToString();
                 txtLivePreview.Text = textStrofa;
 
-                if (_projectionWindow != null && _projectionWindow.IsLoaded)
+                foreach (var window in _projectionWindows)
                 {
-                    _projectionWindow.SetText(textStrofa);
+                    if (window.IsLoaded)
+                    {
+                        window.SetText(textStrofa);
+                    }
                 }
             }
         }

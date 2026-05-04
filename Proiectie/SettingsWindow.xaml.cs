@@ -20,6 +20,9 @@ namespace Proiectie
         {
             InitializeComponent();
         }
-        private void Save_Click(object sender, RoutedEventArgs e) { this.Close(); }
+        private void Save_Click(object sender, RoutedEventArgs e)
+        { 
+            this.Close(); 
+        }
     }
 }
